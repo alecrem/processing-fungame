@@ -1,13 +1,6 @@
-int howManyBlocks = 78;
-int blocksPerRow = 6;
-int blockSize = 48;
-int playerSize = 24;
-int difficulty = 60,
-bonus = 94, 
-lifeLoss = 20,
-lifeBonus = 5;
-float gameSpeed = 1.0,
-gameSpeedIncrease = 0.002;
+int howManyBlocks = 78, blocksPerRow = 6, blockSize = 48, playerSize = 24, 
+difficulty = 60, bonus = 94, lifeLoss = 20, lifeBonus = 5;
+float gameSpeed = 1.0, gameSpeedIncrease = 0.002;
 boolean globalHit = false;
 Block[] blocks = new Block[howManyBlocks];
 Player player;
@@ -27,9 +20,11 @@ void draw() {
   for (int i=0; i<howManyBlocks; i++) {
     blocks[i].display();
   }
-  player.x = mouseX - player.size/2;
-  player.y = mouseY - player.size/2;
   player.display();
+  printScore();
+}
+
+void printScore() {
   stroke(#440000);
   fill(#cc0000);
   rect(0, 0, 100, 10);
@@ -41,13 +36,14 @@ void draw() {
 
 class Player {
   float x, y;
-  int size = playerSize;
-  int life = 1000, score = 0;
+  int size = playerSize, life = 1000, score = 0;
   Player() {
     x = width/2 - size/2;
     y = height - blockSize/2 - size/2;
   }
   void display() {
+    player.x = mouseX - player.size/2;
+    player.y = mouseY - player.size/2;
     fill(#66dd88);
     if (globalHit) {
       fill(#113355);
@@ -60,6 +56,7 @@ class Player {
 class Block {
   int x, sprite, size, id;
   float y;
+  boolean isHit = false;
   Block(int _x, int _y, int _sprite, int _id) {
     x = _x;
     y = _y;
@@ -68,37 +65,21 @@ class Block {
     size = blockSize;
   }
   void display() {
-    boolean isHit = false;
+    isHit = false;
     if (sprite>difficulty) {
-      if (player.x<x+size && player.x+player.size>x && player.y<y+size && player.y+player.size>y) {
-        isHit = true;
-        globalHit = true;
-        //text("touche " + id, width, height);
-        //println("touche " + id);
-        if (sprite>bonus) {
-          player.life += lifeBonus;
-        }
-        else {
-          player.life -= lifeLoss;
-        }
-        if (player.life>1000) {
-          player.life=1000;
-          sprite = 0;
-        }
-        if (player.life<0) {
-          noLoop();
-        }
-      }
+      hitCheck();
       if (isHit) {
-        if (sprite>bonus) {
+        if (sprite>=bonus) {
+          getLife();
           fill(#88ff00);
         }
         else {
+          loseLife();
           fill(#773333);
         }
       }
       else {
-        if (sprite>bonus) {
+        if (sprite>=bonus) {
           fill(#88cc22);
         }
         else {
@@ -108,12 +89,34 @@ class Block {
       stroke(#664444);
       rect(x, y, size, size);
     }
+    move();
+  }
+  void move() {
     y += gameSpeed;
     if (y>=height) {
       y = -blockSize+1;
       sprite = int(random(0, 100));
       player.score ++;
       gameSpeed += gameSpeedIncrease;
+    }
+  }
+  void hitCheck() {
+    if (player.x<x+size && player.x+player.size>x && player.y<y+size && player.y+player.size>y) {
+      isHit = true;
+      globalHit = true;
+    }
+  }
+  void getLife() {
+    player.life += lifeBonus;
+    if (player.life>1000) {
+      player.life=1000;
+      sprite = 0;
+    }
+  }
+  void loseLife() {
+    player.life -= lifeLoss;
+    if (player.life<0) {
+      noLoop();
     }
   }
 }
