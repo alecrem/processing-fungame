@@ -13,24 +13,12 @@ void setup() {
     blocks[i] = new Block(i%blocksPerRow*blockSize, i/blocksPerRow*blockSize-height, sprite, i);
   }
   player = new Player();
-  bgR = int(random(127, 256));
-  bgG = int(random(127, 256));
-  bgB = int(255 - bgR/2 - bgG/2);
+  initBackground();
 }
 
 void draw() {
+  updateBackground();
   globalHit = false;
-  background(255 - (255-bgR)/4, 255 - (255-bgG)/4, 255 - (255-bgB)/4);
-  if (bgR>=255 || bgR<=0) {
-    bgRSign *= -1;
-  }
-  bgR += bgRSign;
-  if (bgG>=255 || bgG<=0) {
-    bgGSign *= -1;
-  }
-  bgG += bgGSign;
-  bgB = int(255 - bgR/2 - bgG/2);
-
   for (int i=0; i<howManyBlocks; i++) {
     blocks[i].display();
   }
@@ -46,6 +34,24 @@ void printScore() {
   rect(0, 0, player.life/10, 10);
   fill(34, 0, 0);
   text(player.score, 110, 10);
+}
+
+void initBackground(){
+  bgR = int(random(127, 256));
+  bgG = int(random(127, 256));
+  bgB = int(255 - bgR/2 - bgG/2);
+}
+void updateBackground(){
+  if (bgR>=255 || bgR<=0) {
+    bgRSign *= -1;
+  }
+  bgR += bgRSign;
+  if (bgG>=255 || bgG<=0) {
+    bgGSign *= -1;
+  }
+  bgG += bgGSign;
+  bgB = int(255 - bgR/2 - bgG/2);
+  background(255 - (255-bgR)/4, 255 - (255-bgG)/4, 255 - (255-bgB)/4);
 }
 
 class Player {
@@ -114,8 +120,10 @@ class Block {
     y += gameSpeed;
     if (y>=height) {
       y = -blockSize+1;
+      if (sprite>difficulty && sprite<bonus) {
+        player.score ++;
+      }
       sprite = int(random(0, 100));
-      player.score ++;
       gameSpeed += gameSpeedIncrease;
     }
   }
@@ -139,6 +147,7 @@ class Block {
     }
   }
 }
+
 void displayMatrix(int[][] matrix, int x, int y, int imax, int jmax) {
   int rectSize = 3;
   for (int i=0; i<imax; i++) {
@@ -151,6 +160,7 @@ void displayMatrix(int[][] matrix, int x, int y, int imax, int jmax) {
     }
   }
 }
+
 int[][] brickBlock() {
   int[][] matrix = {
     {
