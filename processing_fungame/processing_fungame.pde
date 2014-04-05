@@ -1,5 +1,6 @@
 int howManyBlocks = 78, blocksPerRow = 6, blockSize = 48, playerSize = 24, 
-difficulty = 60, bonus = 94, lifeLoss = 20, lifeBonus = 5;
+difficulty = 60, bonus = 94, lifeLoss = 20, lifeBonus = 5, 
+bgR = 255, bgG = 0, bgB = 0, bgRSign = +1, bgGSign = -1;
 float gameSpeed = 1.0, gameSpeedIncrease = 0.002;
 boolean globalHit = false;
 Block[] blocks = new Block[howManyBlocks];
@@ -12,11 +13,24 @@ void setup() {
     blocks[i] = new Block(i%blocksPerRow*blockSize, i/blocksPerRow*blockSize-height, sprite, i);
   }
   player = new Player();
+  bgR = int(random(127, 256));
+  bgG = int(random(127, 256));
+  bgB = int(255 - bgR/2 - bgG/2);
 }
 
 void draw() {
   globalHit = false;
-  background(#eeddbb);
+  background(255 - (255-bgR)/4, 255 - (255-bgG)/4, 255 - (255-bgB)/4);
+  if (bgR>=255 || bgR<=0) {
+    bgRSign *= -1;
+  }
+  bgR += bgRSign;
+  if (bgG>=255 || bgG<=0) {
+    bgGSign *= -1;
+  }
+  bgG += bgGSign;
+  bgB = int(255 - bgR/2 - bgG/2);
+
   for (int i=0; i<howManyBlocks; i++) {
     blocks[i].display();
   }
@@ -25,12 +39,12 @@ void draw() {
 }
 
 void printScore() {
-  stroke(#440000);
-  fill(#cc0000);
+  stroke(68, 0, 0, 200);
+  fill(204, 0, 0, 150);
   rect(0, 0, 100, 10);
-  fill(#cccc00);
+  fill(230, 230, 0, 150);
   rect(0, 0, player.life/10, 10);
-  fill(#220000);
+  fill(34, 0, 0);
   text(player.score, 110, 10);
 }
 
@@ -71,22 +85,27 @@ class Block {
       if (isHit) {
         if (sprite>=bonus) {
           getLife();
-          fill(#88ff00);
+          displayMatrix(bonusBlock(), int(x), int(y), 16, 16);
+          fill(136, 255, 0, 80);
         }
         else {
           loseLife();
-          fill(#773333);
+          displayMatrix(brickBlock(), int(x), int(y), 16, 16);
+          fill(119, 51, 51, 80);
         }
       }
       else {
         if (sprite>=bonus) {
-          fill(#88cc22);
+          displayMatrix(bonusBlock(), int(x), int(y), 16, 16);
+          fill(136, 204, 34, 80);
         }
         else {
-          fill(#cc8888);
+          displayMatrix(brickBlock(), int(x), int(y), 16, 16);
+          fill(204, 136, 136, 80);
         }
       }
-      stroke(#664444);
+      //stroke(#664444);
+      noStroke();
       rect(x, y, size, size);
     }
     move();
@@ -120,3 +139,152 @@ class Block {
     }
   }
 }
+void displayMatrix(int[][] matrix, int x, int y, int imax, int jmax) {
+  int rectSize = 3;
+  for (int i=0; i<imax; i++) {
+    for (int j=0;j<jmax; j++) {
+      if (matrix[i][j] > 0) {
+        noStroke();
+        fill(map(matrix[i][j], 0, 3, 255, 0), 220);
+        rect(x+i*rectSize, y+j*rectSize, rectSize, rectSize);
+      }
+    }
+  }
+}
+int[][] brickBlock() {
+  int[][] matrix = {
+    {
+      0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 0
+    }
+    , 
+    {
+      1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 1, 1
+    }
+    , 
+    {
+      1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 3, 3, 1
+    }
+    , 
+    {
+      1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 3, 3
+    }
+    , 
+    {
+      2, 2, 1, 2, 2, 2, 2, 3, 1, 1, 2, 2, 2, 2, 1, 3
+    }
+    , 
+    {
+      2, 1, 1, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 2, 2, 3
+    }
+    , 
+    {
+      2, 1, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 2, 3
+    }
+    , 
+    {
+      2, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 3, 3
+    }
+    , 
+    {
+      2, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 3, 1, 3
+    }
+    , 
+    {
+      1, 2, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 1, 3
+    }
+    , 
+    {
+      1, 2, 2, 1, 1, 2, 2, 2, 2, 3, 3, 1, 2, 3, 1, 3
+    }
+    , 
+    {
+      1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 1, 2, 2, 3, 1, 3
+    }
+    , 
+    {
+      2, 2, 2, 2, 2, 3, 2, 3, 3, 1, 1, 2, 3, 2, 1, 3
+    }
+    , 
+    {
+      3, 2, 2, 2, 3, 3, 1, 1, 1, 1, 2, 3, 3, 2, 1, 3
+    }
+    , 
+    {
+      3, 2, 3, 3, 3, 1, 1, 2, 2, 2, 3, 3, 2, 2, 1, 3
+    }
+    , 
+    {
+      0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0
+    }
+  };
+  return matrix;
+} 
+
+int[][] bonusBlock() {
+  int[][] matrix = {
+    {
+      0, 1, 2, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 2, 1, 0
+    }
+    , 
+    {
+      1, 1, 2, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 2, 1, 1
+    }
+    , 
+    {
+      2, 2, 2, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 2, 2, 2
+    }
+    , 
+    {
+      1, 1, 1, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 1, 1, 1
+    }
+    , 
+    {
+      0, 0, 0, 0, 0, 2, 1, 0, 2, 1, 2, 0, 0, 0, 0, 0
+    }
+    , 
+    {
+      2, 2, 2, 2, 2, 2, 1, 0, 2, 1, 2, 2, 2, 2, 2, 2
+    }
+    , 
+    {
+      1, 1, 1, 1, 1, 1, 1, 0, 2, 1, 1, 1, 1, 1, 1, 1
+    }
+    , 
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    }
+    , 
+    {
+      2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2
+    }
+    , 
+    {
+      1, 1, 1, 1, 1, 1, 1, 0, 2, 1, 1, 1, 1, 1, 1, 1
+    }
+    , 
+    {
+      2, 2, 2, 2, 2, 2, 1, 0, 2, 1, 2, 2, 2, 2, 2, 2
+    }
+    , 
+    {
+      0, 0, 0, 0, 0, 2, 1, 0, 2, 1, 2, 0, 0, 0, 0, 0
+    }
+    , 
+    {
+      1, 1, 1, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 1, 1, 1
+    }
+    , 
+    {
+      2, 2, 2, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 2, 2, 2
+    }
+    , 
+    {
+      1, 1, 2, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 2, 1, 1
+    }
+    , 
+    {
+      0, 1, 2, 1, 0, 2, 1, 0, 2, 1, 2, 0, 1, 2, 1, 0
+    }
+  };
+  return matrix;
+} 
